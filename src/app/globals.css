@@ -1,0 +1,85 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Light mode — paper-warm */
+    --background: 42 30% 97%;
+    --foreground: 222 47% 11%;
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+    --primary: 219 35% 19%;          /* navy */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 220 14% 96%;
+    --secondary-foreground: 219 35% 19%;
+    --muted: 220 14% 96%;
+    --muted-foreground: 220 9% 46%;
+    --accent: 38 78% 57%;             /* gold */
+    --accent-foreground: 219 35% 19%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 38 78% 57%;
+    --radius: 0.75rem;
+  }
+
+  .dark {
+    --background: 220 30% 10%;
+    --foreground: 0 0% 95%;
+    --card: 220 30% 13%;
+    --card-foreground: 0 0% 95%;
+    --primary: 38 78% 57%;
+    --primary-foreground: 220 30% 10%;
+    --secondary: 220 25% 18%;
+    --secondary-foreground: 0 0% 95%;
+    --muted: 220 25% 18%;
+    --muted-foreground: 220 9% 65%;
+    --accent: 38 78% 57%;
+    --accent-foreground: 220 30% 10%;
+    --destructive: 0 70% 50%;
+    --destructive-foreground: 0 0% 95%;
+    --border: 220 20% 22%;
+    --input: 220 20% 22%;
+    --ring: 38 78% 57%;
+  }
+}
+
+@layer base {
+  * { @apply border-border; }
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: hsl(var(--muted)); border-radius: 5px; }
+  ::-webkit-scrollbar-thumb:hover { background: hsl(var(--muted-foreground) / 0.4); }
+}
+
+/* Brand gradient header */
+.brand-gradient {
+  background: linear-gradient(135deg, #1F2940 0%, #2A3656 50%, #1F2940 100%);
+}
+
+.gold-text {
+  background: linear-gradient(135deg, #E8A93C 0%, #F4C97C 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.kpi-card {
+  @apply rounded-2xl border bg-card text-card-foreground shadow-sm transition-all hover:shadow-md hover:-translate-y-0.5;
+}
+
+.glass {
+  @apply bg-card/70 backdrop-blur-xl border border-white/10;
+}
+
+/* Sidebar active link */
+.nav-active {
+  @apply bg-brand-gold/10 text-brand-gold border-l-2 border-brand-gold;
+}
