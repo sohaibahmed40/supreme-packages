@@ -70,6 +70,7 @@ export const unknown_accounts = sqliteTable("unknown_accounts", {
   txn_count: integer("txn_count").default(1),
   total_credit: real("total_credit").default(0),
   total_debit: real("total_debit").default(0),
+  last_txn_date: text("last_txn_date"),
 }, (t) => ({
   uniq: uniqueIndex("unknown_unique").on(t.kind, t.value),
 }));
@@ -89,6 +90,9 @@ export const attendance = sqliteTable("attendance", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   employee_id: integer("employee_id").references(() => employees.id, { onDelete: "cascade" }).notNull(),
   date: text("date").notNull(),          // YYYY-MM-DD
+  in_time: text("in_time"),              // "08:00 AM"
+  out_time: text("out_time"),            // "07:00 PM"
+  break_time: real("break_time").default(0),
   hours: real("hours").default(0),
   hourly_rate: real("hourly_rate").default(0),
   daily_salary: real("daily_salary").default(0),
@@ -137,6 +141,19 @@ export const bills = sqliteTable("bills", {
   status: text("status", { enum: ["pending", "partial", "paid"] }).default("pending"),
   notes: text("notes"),
 });
+
+// ─────────── SALARY MONTHS (payment status per employee per month) ───────────
+export const salary_months = sqliteTable("salary_months", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  employee_id: integer("employee_id").references(() => employees.id, { onDelete: "cascade" }).notNull(),
+  year_month: text("year_month").notNull(), // "2026-05"
+  status: text("status", { enum: ["unpaid", "paid"] }).default("unpaid").notNull(),
+  monthly_wage: real("monthly_wage"),
+  paid_at: text("paid_at"),
+  notes: text("notes"),
+}, (t) => ({
+  uniq: uniqueIndex("salary_month_emp_uniq").on(t.employee_id, t.year_month),
+}));
 
 // ─────────── APP SETTINGS ───────────
 export const settings = sqliteTable("settings", {

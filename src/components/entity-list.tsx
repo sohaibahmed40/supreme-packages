@@ -10,7 +10,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { createEntity, updateEntity, deleteEntity, addIdentifier, IdentifierInput } from "@/lib/entity-actions";
 import { formatPKR, formatDate, ENTITY_TYPES } from "@/lib/utils";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, Tag, CircleDot, CreditCard, User, Package, Truck, Home } from "lucide-react";
+import { Plus, Pencil, Trash2, Tag, CircleDot, CreditCard, User, Package, Truck, Home, Search, FileText } from "lucide-react";
+import InvoiceSheet from "@/components/invoice-sheet";
+import { getClientInvoices } from "@/lib/invoice-actions";
 
 interface EntityData {
   id: number;
@@ -40,11 +42,37 @@ export default function EntityList({
 }) {
   const [addOpen, setAddOpen] = useState(false);
   const [editId, setEditId] = useState<number | null>(null);
+  const [search, setSearch] = useState("");
+  const [invoiceClient, setInvoiceClient] = useState<{ id: number; name: string } | null>(null);
+  const [invoiceData, setInvoiceData] = useState<any[]>([]);
+
+  async function openInvoices(e: EntityData) {
+    const data = await getClientInvoices(e.id);
+    setInvoiceData(data);
+    setInvoiceClient({ id: e.id, name: e.name });
+  }
   const router = useRouter();
+
+  const q = search.toLowerCase();
+  const filtered = entities.filter(e =>
+    e.name.toLowerCase().includes(q) ||
+    (e.category ?? "").toLowerCase().includes(q) ||
+    (e.notes ?? "").toLowerCase().includes(q) ||
+    e.identifiers.some(id => id.value.toLowerCase().includes(q))
+  );
 
   return (
     <>
-      <div className="flex justify-end">
+      <div className="flex items-center justify-between gap-3">
+        <div className="relative flex-1 max-w-sm">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            className="pl-9"
+            placeholder={`Search ${entityType === "client" ? "clients" : "entities"}…`}
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+          />
+        </div>
         <Button variant="gold" onClick={() => setAddOpen(true)}>
           <Plus className="h-4 w-4 mr-1" /> Add {entityType === "client" ? "Client" : "Entity"}
         </Button>
@@ -71,13 +99,13 @@ export default function EntityList({
                 </tr>
               </thead>
               <tbody className="divide-y">
-                {entities.length === 0 ? (
+                {filtered.length === 0 ? (
                   <tr>
                     <td colSpan={showPending ? 7 : 6} className="px-4 py-12 text-center text-muted-foreground">
-                      No entities yet. Click "Add" to create one.
+                      {search ? `No results matching "${search}"` : `No entities yet. Click "Add" to create one.`}
                     </td>
                   </tr>
-                ) : entities.map(e => (
+                ) : filtered.map(e => (
                   <tr key={e.id} className="hover:bg-muted/30">
                     <td className="px-4 py-3">
                       <div className="font-semibold">{e.name}</div>
@@ -114,6 +142,12 @@ export default function EntityList({
                     )}
                     <td className="px-4 py-3 text-right">
                       <div className="flex justify-end gap-1">
+                        {entityType === "client" && (
+                          <Button variant="ghost" size="icon" className="h-7 w-7" title="Invoices"
+                                  onClick={() => openInvoices(e)}>
+                            <FileText className="h-3.5 w-3.5" />
+                          </Button>
+                        )}
                         <Button variant="ghost" size="icon" className="h-7 w-7"
                                 onClick={() => setEditId(e.id)}>
                           <Pencil className="h-3.5 w-3.5" />
@@ -143,6 +177,17 @@ export default function EntityList({
           open={!!editId}
           onClose={() => setEditId(null)}
           showPending={showPending}
+        />
+      )}
+
+      {/* Invoice Sheet */}
+      {invoiceClient && (
+        <InvoiceSheet
+          open={!!invoiceClient}
+          onClose={() => setInvoiceClient(null)}
+          clientId={invoiceClient.id}
+          clientName={invoiceClient.name}
+          initialInvoices={invoiceData}
         />
       )}
     </>

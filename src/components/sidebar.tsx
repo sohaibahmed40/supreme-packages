@@ -4,7 +4,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import {
   LayoutDashboard, Receipt, Upload, Users, Package, UserCog,
-  Wallet, HelpCircle, LogOut, Settings as SettingsIcon, Box,
+  Wallet, HelpCircle, LogOut, Settings as SettingsIcon, Box, FileText,
 } from "lucide-react";
 
 const nav = [
@@ -12,6 +12,7 @@ const nav = [
   { href: "/upload", label: "Upload Statement", icon: Upload },
   { href: "/transactions", label: "Transactions", icon: Receipt },
   { href: "/clients", label: "Clients", icon: Users },
+  { href: "/invoices", label: "Invoices", icon: FileText },
   { href: "/suppliers", label: "Suppliers", icon: Package },
   { href: "/employees", label: "Employees", icon: UserCog },
   { href: "/cash", label: "Cash Expenses", icon: Wallet },

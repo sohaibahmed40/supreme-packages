@@ -17,14 +17,14 @@ interface Props {
 
 export default function TransactionRowActions({ txnId, currentEntityId, entities }: Props) {
   const [open, setOpen] = useState(false);
-  const [entityId, setEntityId] = useState<string>(currentEntityId ? String(currentEntityId) : "");
+  const [entityId, setEntityId] = useState<string>(currentEntityId ? String(currentEntityId) : "none");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
   async function save() {
     setLoading(true);
     try {
-      await reassignTransaction(txnId, entityId ? parseInt(entityId) : null);
+      await reassignTransaction(txnId, entityId !== "none" ? parseInt(entityId) : null);
       toast.success("Transaction reassigned");
       setOpen(false);
       router.refresh();
@@ -51,7 +51,7 @@ export default function TransactionRowActions({ txnId, currentEntityId, entities
           <Select value={entityId} onValueChange={setEntityId}>
             <SelectTrigger><SelectValue placeholder="Choose entity…" /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="">— None (Unidentified) —</SelectItem>
+              <SelectItem value="none">— None (Unidentified) —</SelectItem>
               {entities.map(e => <SelectItem key={e.id} value={String(e.id)}>{e.name}</SelectItem>)}
             </SelectContent>
           </Select>

@@ -5,6 +5,7 @@ import { formatPKR, formatDate } from "@/lib/utils";
 import TransactionsFilters from "./filters";
 import TransactionRowActions from "./row-actions";
 import { Receipt } from "lucide-react";
+import TruncatedCell from "@/components/truncated-cell";
 
 interface Props {
   searchParams: Promise<{
@@ -72,8 +73,14 @@ export default async function TransactionsPage({ searchParams }: Props) {
     .from(schema.transactions)
     .where(sql`${schema.transactions.category} IS NOT NULL`);
 
-  const entities = await db.select({ id: schema.entities.id, name: schema.entities.name })
+  const allEntities = await db.select({ id: schema.entities.id, name: schema.entities.name })
     .from(schema.entities).orderBy(schema.entities.name);
+  const entitySeen = new Set<string>();
+  const entities = allEntities.filter(e => {
+    if (entitySeen.has(e.name)) return false;
+    entitySeen.add(e.name);
+    return true;
+  });
 
   return (
     <div className="p-8 space-y-6">
@@ -141,7 +148,7 @@ export default async function TransactionsPage({ searchParams }: Props) {
                     return (
                       <tr key={t.id} className="hover:bg-muted/30">
                         <td className="px-3 py-2 whitespace-nowrap">{formatDate(t.date)}</td>
-                        <td className="px-3 py-2 max-w-md truncate" title={t.description}>{t.description}</td>
+                        <td className="px-3 py-2 max-w-md"><TruncatedCell text={t.description} /></td>
                         <td className="px-3 py-2 font-medium">
                           {t.entity_name ?? <span className="text-amber-600">— Unidentified —</span>}
                         </td>

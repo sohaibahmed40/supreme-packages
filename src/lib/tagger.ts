@@ -63,9 +63,10 @@ export function matchEntity(
 ): IdentifierMatch | null {
   const descUpper = desc.toUpperCase();
 
-  // 1. XXXX#### account numbers
-  const acctMatches = [...desc.matchAll(/XXXX(\d{4})/g)].map(m => m[1]);
-  const pkMatches = [...desc.matchAll(/PK\d{2}\w+xxx(\d{4})/g)].map(m => m[1]);
+  // 1. XXXX#### account numbers — capture LAST 4 digits so ABL long-form
+  //    accounts like XXXX001002528307001 get "7001" not "0010".
+  const acctMatches = [...desc.matchAll(/XXXX\d*?(\d{4})(?!\d)/g)].map(m => m[1]);
+  const pkMatches = [...desc.matchAll(/PK\d{2}\w+xxx\d*?(\d{4})(?!\d)/g)].map(m => m[1]);
   for (const a of [...acctMatches, ...pkMatches]) {
     const hit = index.acctMap.get(a);
     if (hit) return hit;
@@ -161,10 +162,10 @@ export function categorizeWithEntity(
  */
 export function extractCandidateIdentifiers(desc: string): { kind: "acct" | "raast"; value: string }[] {
   const out: { kind: "acct" | "raast"; value: string }[] = [];
-  const acctMatches = [...desc.matchAll(/XXXX(\d{4})/g)].map(m => m[1]);
-  const pkMatches = [...desc.matchAll(/PK\d{2}\w+xxx(\d{4})/g)].map(m => m[1]);
+  const acctMatches = [...desc.matchAll(/XXXX\d*?(\d{4})(?!\d)/g)].map(m => m[1]);
+  const pkMatches = [...desc.matchAll(/PK\d{2}\w+xxx\d*?(\d{4})(?!\d)/g)].map(m => m[1]);
   for (const v of [...acctMatches, ...pkMatches]) out.push({ kind: "acct", value: v });
-  const raastMatches = [...desc.matchAll(/PYxxx(\d{4})/gi)].map(m => m[1]);
+  const raastMatches = [...desc.matchAll(/PYxxx\d*?(\d{4})(?!\d)/gi)].map(m => m[1]);
   for (const v of raastMatches) out.push({ kind: "raast", value: v });
   return out;
 }

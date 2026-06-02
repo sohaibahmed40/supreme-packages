@@ -2,10 +2,12 @@
  * Seed script: populates entities, identifiers, and employees.
  * Run with: npx tsx scripts/seed.ts
  */
-import "dotenv/config";
+import { config } from "dotenv";
+config({ path: ".env.local" });
 import { drizzle } from "drizzle-orm/libsql";
 import { createClient } from "@libsql/client";
 import * as schema from "../src/db/schema";
+import { eq } from "drizzle-orm";
 
 const client = createClient({
   url: process.env.TURSO_DATABASE_URL!,
@@ -190,6 +192,12 @@ async function seed() {
 
   // Insert entities + identifiers
   for (const e of ENTITIES) {
+    const existing = await db.select({ id: schema.entities.id })
+      .from(schema.entities).where(eq(schema.entities.name, e.name)).limit(1);
+    if (existing.length > 0) {
+      console.log(`  ⏭️  ${e.type.padEnd(20)} ${e.name} (already exists)`);
+      continue;
+    }
     try {
       const [created] = await db.insert(schema.entities).values({
         name: e.name, type: e.type,
@@ -201,15 +209,11 @@ async function seed() {
           await db.insert(schema.account_identifiers).values({
             entity_id: created.id, kind: id.kind, value: id.value,
           });
-        } catch { /* skip duplicate */ }
+        } catch { /* skip duplicate identifier */ }
       }
       console.log(`  ✅ ${e.type.padEnd(20)} ${e.name} (${e.identifiers.length} identifiers)`);
     } catch (err: any) {
-      if (String(err?.message).includes("UNIQUE")) {
-        console.log(`  ⏭️  ${e.type.padEnd(20)} ${e.name} (already exists)`);
-      } else {
-        console.error(`  ❌ ${e.name}: ${err?.message}`);
-      }
+      console.error(`  ❌ ${e.name}: ${err?.message}`);
     }
   }
 
