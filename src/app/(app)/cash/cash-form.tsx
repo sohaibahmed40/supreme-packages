@@ -14,7 +14,7 @@ import { Plus } from "lucide-react";
 export default function CashForm() {
   const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
   const [amount, setAmount] = useState("");
-  const [category, setCategory] = useState(CASH_CATEGORIES[0]);
+  const [category, setCategory] = useState<string>(CASH_CATEGORIES[0]);
   const [description, setDescription] = useState("");
   const [paidTo, setPaidTo] = useState("");
   const [loading, setLoading] = useState(false);
