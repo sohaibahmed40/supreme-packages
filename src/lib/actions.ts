@@ -48,6 +48,7 @@ export async function ingestCSV(content: string): Promise<IngestResult> {
       cnt: number;
       cr: number;
       db: number;
+      last_date: string;
     }>();
 
     for (const t of parsed) {
