@@ -65,24 +65,24 @@ export default async function ClientsPage() {
   const totalOutstanding = enriched.reduce((s, c) => s + c.outstanding, 0);
 
   return (
-    <div className="p-8 space-y-6">
+    <div className="p-4 sm:p-6 lg:p-8 space-y-4 sm:space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">Clients</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold">Clients</h1>
         <p className="text-sm text-muted-foreground mt-1">Manage your clients and track receivables</p>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <Card className="p-4">
           <div className="text-xs text-muted-foreground uppercase">Total Clients</div>
-          <div className="text-3xl font-bold mt-1">{clients.length}</div>
+          <div className="text-xl sm:text-2xl font-bold mt-1">{clients.length}</div>
         </Card>
         <Card className="p-4">
           <div className="text-xs text-muted-foreground uppercase">Total Received</div>
-          <div className="text-3xl font-bold text-emerald-600 mt-1">PKR {formatPKR(totalReceived)}</div>
+          <div className="text-xl sm:text-2xl font-bold text-emerald-600 mt-1">PKR {formatPKR(totalReceived)}</div>
         </Card>
         <Card className="p-4">
           <div className="text-xs text-muted-foreground uppercase">Total Outstanding</div>
-          <div className="text-3xl font-bold text-red-600 mt-1">PKR {formatPKR(totalOutstanding)}</div>
+          <div className="text-xl sm:text-2xl font-bold text-red-600 mt-1">PKR {formatPKR(totalOutstanding)}</div>
         </Card>
       </div>
 

@@ -64,7 +64,7 @@ export default function EntityList({
   return (
     <>
       <div className="flex items-center justify-between gap-3">
-        <div className="relative flex-1 max-w-sm">
+        <div className="relative flex-1 max-w-full sm:max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             className="pl-9"
@@ -74,7 +74,9 @@ export default function EntityList({
           />
         </div>
         <Button variant="gold" onClick={() => setAddOpen(true)}>
-          <Plus className="h-4 w-4 mr-1" /> Add {entityType === "client" ? "Client" : "Entity"}
+          <Plus className="h-4 w-4 mr-1" />
+          <span className="hidden sm:inline">Add {entityType === "client" ? "Client" : "Entity"}</span>
+          <span className="sm:hidden">Add</span>
         </Button>
       </div>
 
@@ -85,17 +87,17 @@ export default function EntityList({
             <table className="w-full text-sm">
               <thead className="bg-muted/50 text-xs uppercase tracking-wide">
                 <tr>
-                  <th className="text-left px-4 py-3 font-medium">Name</th>
-                  <th className="text-left px-4 py-3 font-medium">Category</th>
-                  <th className="text-left px-4 py-3 font-medium">Identifiers</th>
-                  <th className="text-right px-4 py-3 font-medium">
+                  <th className="text-left px-3 sm:px-4 py-3 font-medium">Name</th>
+                  <th className="text-left px-3 sm:px-4 py-3 font-medium hidden sm:table-cell">Category</th>
+                  <th className="text-left px-3 sm:px-4 py-3 font-medium hidden lg:table-cell">Identifiers</th>
+                  <th className="text-right px-3 sm:px-4 py-3 font-medium">
                     {entityType === "client" ? "Received" : "Paid"}
                   </th>
-                  <th className="text-right px-4 py-3 font-medium">Txns</th>
+                  <th className="text-right px-3 sm:px-4 py-3 font-medium hidden sm:table-cell">Txns</th>
                   {showPending && (
-                    <th className="text-right px-4 py-3 font-medium">Outstanding</th>
+                    <th className="text-right px-3 sm:px-4 py-3 font-medium hidden md:table-cell">Outstanding</th>
                   )}
-                  <th className="text-right px-4 py-3 font-medium w-24">Actions</th>
+                  <th className="text-right px-3 sm:px-4 py-3 font-medium w-20">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y">
@@ -107,14 +109,18 @@ export default function EntityList({
                   </tr>
                 ) : filtered.map(e => (
                   <tr key={e.id} className="hover:bg-muted/30">
-                    <td className="px-4 py-3">
+                    <td className="px-3 sm:px-4 py-3">
                       <div className="font-semibold">{e.name}</div>
-                      {e.notes && <div className="text-xs text-muted-foreground mt-0.5">{e.notes}</div>}
+                      {e.notes && <div className="text-xs text-muted-foreground mt-0.5 hidden sm:block">{e.notes}</div>}
+                      {/* Mobile: show category inline */}
+                      <div className="sm:hidden mt-0.5">
+                        <span className="text-xs px-1.5 py-0.5 rounded-full bg-secondary">{e.category || e.type}</span>
+                      </div>
                     </td>
-                    <td className="px-4 py-3 text-xs">
+                    <td className="px-3 sm:px-4 py-3 text-xs hidden sm:table-cell">
                       <span className="px-2 py-0.5 rounded-full bg-secondary">{e.category || e.type}</span>
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-3 sm:px-4 py-3 hidden lg:table-cell">
                       <div className="flex flex-wrap gap-1">
                         {e.identifiers.map(id => (
                           <span key={id.id} className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-brand-gold/10 text-brand-gold text-xs font-mono">
@@ -127,28 +133,28 @@ export default function EntityList({
                         )}
                       </div>
                     </td>
-                    <td className={`px-4 py-3 text-right font-semibold ${entityType === "client" ? "text-emerald-600" : "text-red-600"}`}>
+                    <td className={`px-3 sm:px-4 py-3 text-right font-semibold text-xs sm:text-sm ${entityType === "client" ? "text-emerald-600" : "text-red-600"}`}>
                       {formatPKR(e.totalPaid)}
                     </td>
-                    <td className="px-4 py-3 text-right text-muted-foreground">{e.txnCount}</td>
+                    <td className="px-3 sm:px-4 py-3 text-right text-muted-foreground hidden sm:table-cell">{e.txnCount}</td>
                     {showPending && (
-                      <td className="px-4 py-3 text-right">
+                      <td className="px-3 sm:px-4 py-3 text-right hidden md:table-cell">
                         {(e.pending_amount ?? 0) > 0 ? (
-                          <span className="font-bold text-red-600">PKR {formatPKR(e.pending_amount ?? 0)}</span>
+                          <span className="font-bold text-red-600 text-xs sm:text-sm">PKR {formatPKR(e.pending_amount ?? 0)}</span>
                         ) : (
                           <span className="text-emerald-600 text-xs">✅ Settled</span>
                         )}
                       </td>
                     )}
-                    <td className="px-4 py-3 text-right">
+                    <td className="px-3 sm:px-4 py-3 text-right">
                       <div className="flex justify-end gap-1">
                         {entityType === "client" && (
-                          <Button variant="ghost" size="icon" className="h-7 w-7" title="Invoices"
+                          <Button variant="ghost" size="icon" className="h-8 w-8" title="Invoices"
                                   onClick={() => openInvoices(e)}>
                             <FileText className="h-3.5 w-3.5" />
                           </Button>
                         )}
-                        <Button variant="ghost" size="icon" className="h-7 w-7"
+                        <Button variant="ghost" size="icon" className="h-8 w-8"
                                 onClick={() => setEditId(e.id)}>
                           <Pencil className="h-3.5 w-3.5" />
                         </Button>
@@ -238,13 +244,13 @@ function AddEntityDialog({ open, onClose, defaultType, showPending }: {
 
   return (
     <Dialog open={open} onOpenChange={v => !v && onClose()}>
-      <DialogContent className="max-w-lg">
+      <DialogContent className="w-full sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>Add New Entity</DialogTitle>
           <DialogDescription>Add a client, supplier, employee, or any counterparty.</DialogDescription>
         </DialogHeader>
         <div className="space-y-4">
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <Label>Name *</Label>
               <Input value={name} onChange={e => setName(e.target.value)} placeholder="Entity name" />
@@ -368,7 +374,7 @@ function EditEntityDialog({ entity, open, onClose, showPending }: {
 
   return (
     <Dialog open={open} onOpenChange={v => !v && onClose()}>
-      <DialogContent className="max-w-lg">
+      <DialogContent className="w-full sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>Edit: {entity.name}</DialogTitle>
           <DialogDescription>Update details, identifiers, or outstanding balance</DialogDescription>

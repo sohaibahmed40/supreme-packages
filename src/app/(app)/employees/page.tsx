@@ -72,30 +72,30 @@ export default async function EmployeesPage() {
   const unpaidMonths = salaryMonths.filter(s => s.status === "unpaid").length;
 
   return (
-    <div className="p-8 space-y-6">
+    <div className="p-4 sm:p-6 lg:p-8 space-y-4 sm:space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">Employees</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold">Employees</h1>
         <p className="text-sm text-muted-foreground mt-1">
           Manage factory workers and track monthly attendance & salary.
         </p>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <Card className="p-4">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <Card className="p-3 sm:p-4">
           <div className="text-xs text-muted-foreground uppercase">Total Workers</div>
-          <div className="text-3xl font-bold mt-1">{employees.length}</div>
+          <div className="text-2xl sm:text-3xl font-bold mt-1">{employees.length}</div>
         </Card>
-        <Card className="p-4">
+        <Card className="p-3 sm:p-4">
           <div className="text-xs text-muted-foreground uppercase">Active</div>
-          <div className="text-3xl font-bold text-emerald-600 mt-1">{activeCount}</div>
+          <div className="text-2xl sm:text-3xl font-bold text-emerald-600 mt-1">{activeCount}</div>
         </Card>
-        <Card className="p-4">
+        <Card className="p-3 sm:p-4">
           <div className="text-xs text-muted-foreground uppercase">Combined Wage</div>
-          <div className="text-2xl font-bold text-amber-600 mt-1">PKR {formatPKR(total)}</div>
+          <div className="text-xl sm:text-2xl font-bold text-amber-600 mt-1">PKR {formatPKR(total)}</div>
         </Card>
-        <Card className="p-4">
+        <Card className="p-3 sm:p-4">
           <div className="text-xs text-muted-foreground uppercase">Unpaid Months</div>
-          <div className={`text-3xl font-bold mt-1 ${unpaidMonths > 0 ? "text-red-600" : "text-emerald-600"}`}>
+          <div className={`text-2xl sm:text-3xl font-bold mt-1 ${unpaidMonths > 0 ? "text-red-600" : "text-emerald-600"}`}>
             {unpaidMonths}
           </div>
         </Card>

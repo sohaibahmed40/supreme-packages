@@ -160,12 +160,14 @@ export default function EmployeesClient({ employees, monthSummaries, salaryMonth
         <TabsContent value="team">
           <div className="space-y-4">
             <div className="flex items-center gap-3">
-              <div className="relative flex-1 max-w-xs">
+              <div className="relative flex-1 max-w-full sm:max-w-xs">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input className="pl-9" placeholder="Search…" value={search} onChange={e => setSearch(e.target.value)} />
               </div>
-              <Button variant="gold" className="ml-auto" onClick={() => setAddOpen(true)}>
-                <Plus className="h-4 w-4 mr-1" /> Add Employee
+              <Button variant="gold" className="ml-auto shrink-0" onClick={() => setAddOpen(true)}>
+                <Plus className="h-4 w-4 mr-1" />
+                <span className="hidden sm:inline">Add Employee</span>
+                <span className="sm:hidden">Add</span>
               </Button>
             </div>
             <Card>
@@ -173,26 +175,33 @@ export default function EmployeesClient({ employees, monthSummaries, salaryMonth
                 <table className="w-full text-sm">
                   <thead className="bg-muted/50 text-xs uppercase tracking-wide">
                     <tr>
-                      <th className="text-left px-4 py-3">Name</th>
-                      <th className="text-right px-4 py-3">Monthly Wage</th>
-                      <th className="text-center px-4 py-3">Status</th>
-                      <th className="text-left px-4 py-3">Notes</th>
-                      <th className="text-right px-4 py-3 w-16"></th>
+                      <th className="text-left px-3 sm:px-4 py-3">Name</th>
+                      <th className="text-right px-3 sm:px-4 py-3">Wage</th>
+                      <th className="text-center px-3 sm:px-4 py-3 hidden sm:table-cell">Status</th>
+                      <th className="text-left px-3 sm:px-4 py-3 hidden md:table-cell">Notes</th>
+                      <th className="text-right px-3 sm:px-4 py-3 w-12"></th>
                     </tr>
                   </thead>
                   <tbody className="divide-y">
                     {filtered.map(e => (
                       <tr key={e.id} className="hover:bg-muted/30">
-                        <td className="px-4 py-3 font-semibold">{e.name}</td>
-                        <td className="px-4 py-3 text-right">PKR {formatPKR(e.monthly_wage ?? 0)}</td>
-                        <td className="px-4 py-3 text-center">
+                        <td className="px-3 sm:px-4 py-3">
+                          <div className="font-semibold">{e.name}</div>
+                          <div className="sm:hidden mt-0.5">
+                            <span className={`px-1.5 py-0.5 rounded-full text-xs ${e.active ? "bg-emerald-100 text-emerald-700" : "bg-red-100 text-red-700"}`}>
+                              {e.active ? "Active" : "Inactive"}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="px-3 sm:px-4 py-3 text-right whitespace-nowrap text-xs sm:text-sm">PKR {formatPKR(e.monthly_wage ?? 0)}</td>
+                        <td className="px-3 sm:px-4 py-3 text-center hidden sm:table-cell">
                           <span className={`px-2 py-0.5 rounded-full text-xs ${e.active ? "bg-emerald-100 text-emerald-700" : "bg-red-100 text-red-700"}`}>
                             {e.active ? "Active" : "Inactive"}
                           </span>
                         </td>
-                        <td className="px-4 py-3 text-muted-foreground text-xs">{e.notes ?? "—"}</td>
-                        <td className="px-4 py-3 text-right">
-                          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setEditEmp(e)}>
+                        <td className="px-3 sm:px-4 py-3 text-muted-foreground text-xs hidden md:table-cell">{e.notes ?? "—"}</td>
+                        <td className="px-3 sm:px-4 py-3 text-right">
+                          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setEditEmp(e)}>
                             <Pencil className="h-3.5 w-3.5" />
                           </Button>
                         </td>
@@ -336,16 +345,18 @@ export default function EmployeesClient({ employees, monthSummaries, salaryMonth
                   <Card>
                     <CardHeader className="pb-2"><CardTitle className="text-sm">Total Hours Worked</CardTitle></CardHeader>
                     <CardContent>
-                      <ResponsiveContainer width="100%" height={220}>
+                      <div className="h-[160px] sm:h-[220px]">
+                      <ResponsiveContainer width="100%" height="100%">
                         <BarChart data={employees.map((e, i) => ({ name: e.name.split(" ")[0], hours: +(analyticsMap.get(e.id)?.total_hours ?? 0).toFixed(0), color: BRAND_COLORS[i % BRAND_COLORS.length] }))} margin={{ top: 0, right: 8, left: 0, bottom: 0 }}>
-                          <XAxis dataKey="name" tick={{ fontSize: 11 }} />
-                          <YAxis tick={{ fontSize: 11 }} />
+                          <XAxis dataKey="name" tick={{ fontSize: 10 }} />
+                          <YAxis tick={{ fontSize: 10 }} />
                           <Tooltip formatter={(v: any) => [`${v}h`, "Hours"]} />
                           <Bar dataKey="hours" radius={[4, 4, 0, 0]}>
                             {employees.map((_, i) => <Cell key={i} fill={BRAND_COLORS[i % BRAND_COLORS.length]} />)}
                           </Bar>
                         </BarChart>
                       </ResponsiveContainer>
+                      </div>
                     </CardContent>
                   </Card>
 
@@ -353,16 +364,18 @@ export default function EmployeesClient({ employees, monthSummaries, salaryMonth
                   <Card>
                     <CardHeader className="pb-2"><CardTitle className="text-sm">Late Arrivals vs Overtime Days</CardTitle></CardHeader>
                     <CardContent>
-                      <ResponsiveContainer width="100%" height={220}>
+                      <div className="h-[160px] sm:h-[220px]">
+                      <ResponsiveContainer width="100%" height="100%">
                         <BarChart data={employees.map(e => ({ name: e.name.split(" ")[0], late: analyticsMap.get(e.id)?.late_days ?? 0, overtime: analyticsMap.get(e.id)?.overtime_days ?? 0 }))} margin={{ top: 0, right: 8, left: 0, bottom: 0 }}>
-                          <XAxis dataKey="name" tick={{ fontSize: 11 }} />
-                          <YAxis tick={{ fontSize: 11 }} />
+                          <XAxis dataKey="name" tick={{ fontSize: 10 }} />
+                          <YAxis tick={{ fontSize: 10 }} />
                           <Tooltip />
-                          <Legend iconSize={10} wrapperStyle={{ fontSize: 11 }} />
+                          <Legend iconSize={10} wrapperStyle={{ fontSize: 10 }} />
                           <Bar dataKey="late" name="Late arrivals" fill="#ef4444" radius={[4, 4, 0, 0]} />
                           <Bar dataKey="overtime" name="Overtime days" fill="#E8A93C" radius={[4, 4, 0, 0]} />
                         </BarChart>
                       </ResponsiveContainer>
+                      </div>
                     </CardContent>
                   </Card>
 
@@ -370,16 +383,18 @@ export default function EmployeesClient({ employees, monthSummaries, salaryMonth
                   <Card>
                     <CardHeader className="pb-2"><CardTitle className="text-sm">Late Night Shifts (past 9 PM)</CardTitle></CardHeader>
                     <CardContent>
-                      <ResponsiveContainer width="100%" height={220}>
+                      <div className="h-[160px] sm:h-[220px]">
+                      <ResponsiveContainer width="100%" height="100%">
                         <BarChart data={employees.map((e, i) => ({ name: e.name.split(" ")[0], nights: analyticsMap.get(e.id)?.late_night_days ?? 0, color: BRAND_COLORS[i % BRAND_COLORS.length] }))} margin={{ top: 0, right: 8, left: 0, bottom: 0 }}>
-                          <XAxis dataKey="name" tick={{ fontSize: 11 }} />
-                          <YAxis tick={{ fontSize: 11 }} />
+                          <XAxis dataKey="name" tick={{ fontSize: 10 }} />
+                          <YAxis tick={{ fontSize: 10 }} />
                           <Tooltip formatter={(v: any) => [v, "Nights"]} />
                           <Bar dataKey="nights" radius={[4, 4, 0, 0]}>
                             {employees.map((_, i) => <Cell key={i} fill={BRAND_COLORS[i % BRAND_COLORS.length]} />)}
                           </Bar>
                         </BarChart>
                       </ResponsiveContainer>
+                      </div>
                     </CardContent>
                   </Card>
 
@@ -387,16 +402,18 @@ export default function EmployeesClient({ employees, monthSummaries, salaryMonth
                   <Card>
                     <CardHeader className="pb-2"><CardTitle className="text-sm">Total Advances Taken (PKR)</CardTitle></CardHeader>
                     <CardContent>
-                      <ResponsiveContainer width="100%" height={220}>
+                      <div className="h-[160px] sm:h-[220px]">
+                      <ResponsiveContainer width="100%" height="100%">
                         <BarChart data={employees.map((e, i) => ({ name: e.name.split(" ")[0], advance: +(analyticsMap.get(e.id)?.total_advance ?? 0).toFixed(0), color: BRAND_COLORS[i % BRAND_COLORS.length] }))} margin={{ top: 0, right: 8, left: 0, bottom: 0 }}>
-                          <XAxis dataKey="name" tick={{ fontSize: 11 }} />
-                          <YAxis tick={{ fontSize: 11 }} tickFormatter={v => `${(v/1000).toFixed(0)}k`} />
+                          <XAxis dataKey="name" tick={{ fontSize: 10 }} />
+                          <YAxis tick={{ fontSize: 10 }} tickFormatter={v => `${(v/1000).toFixed(0)}k`} />
                           <Tooltip formatter={(v: any) => [`PKR ${v.toLocaleString()}`, "Advance"]} />
                           <Bar dataKey="advance" radius={[4, 4, 0, 0]}>
                             {employees.map((_, i) => <Cell key={i} fill={BRAND_COLORS[i % BRAND_COLORS.length]} />)}
                           </Bar>
                         </BarChart>
                       </ResponsiveContainer>
+                      </div>
                     </CardContent>
                   </Card>
                 </div>
@@ -417,19 +434,19 @@ export default function EmployeesClient({ employees, monthSummaries, salaryMonth
                 return (
                   <Card key={ym}>
                     <div className="flex items-center">
-                      <button className="flex-1 flex items-center gap-4 flex-wrap px-4 py-3 hover:bg-muted/30 transition-colors text-left" onClick={() => toggleMonth(ym)}>
-                        <span className="font-semibold text-base">{fmtMonth(ym)}</span>
+                      <button className="flex-1 flex items-center gap-2 sm:gap-4 flex-wrap px-3 sm:px-4 py-3 hover:bg-muted/30 transition-colors text-left" onClick={() => toggleMonth(ym)}>
+                        <span className="font-semibold text-sm sm:text-base">{fmtMonth(ym)}</span>
                         <span className="text-xs text-muted-foreground">{paidCount}/{monthEmps.length} paid</span>
-                        <span className="text-xs text-muted-foreground">Earned: <span className="text-foreground font-medium">PKR {formatPKR(totalEarned)}</span></span>
-                        <span className="text-xs text-muted-foreground">Advances: <span className="text-amber-600 font-medium">PKR {formatPKR(totalAdv)}</span></span>
+                        <span className="text-xs text-muted-foreground hidden sm:inline">Earned: <span className="text-foreground font-medium">PKR {formatPKR(totalEarned)}</span></span>
+                        <span className="text-xs text-muted-foreground hidden sm:inline">Adv: <span className="text-amber-600 font-medium">PKR {formatPKR(totalAdv)}</span></span>
                         {expanded ? <ChevronUp className="h-4 w-4 text-muted-foreground ml-auto" /> : <ChevronDown className="h-4 w-4 text-muted-foreground ml-auto" />}
                       </button>
-                      <div className="flex items-center gap-1 px-3 shrink-0">
+                      <div className="flex items-center gap-1 px-2 sm:px-3 shrink-0">
                         <Button size="sm" variant="outline" className="h-7 text-xs gap-1 text-emerald-600 border-emerald-200 hover:bg-emerald-50" onClick={() => handleMarkAllPaid(ym)}>
-                          <CheckCheck className="h-3 w-3" /> All Paid
+                          <CheckCheck className="h-3 w-3" /><span className="hidden sm:inline"> All Paid</span>
                         </Button>
                         <Button size="sm" variant="outline" className="h-7 text-xs gap-1 text-red-600 border-red-200 hover:bg-red-50" onClick={() => handleDeleteMonth(ym)}>
-                          <Trash2 className="h-3 w-3" /> Delete Month
+                          <Trash2 className="h-3 w-3" /><span className="hidden sm:inline"> Delete</span>
                         </Button>
                       </div>
                     </div>
@@ -437,18 +454,18 @@ export default function EmployeesClient({ employees, monthSummaries, salaryMonth
                     {expanded && (
                       <CardContent className="p-0 border-t">
                         <div className="overflow-x-auto">
-                          <table className="w-full text-sm">
-                            <thead className="bg-muted/30 text-xs uppercase tracking-wide">
+                          <table className="w-full text-xs sm:text-sm">
+                            <thead className="bg-muted/30 text-[10px] sm:text-xs uppercase tracking-wide">
                               <tr>
-                                <th className="text-left px-4 py-2">Employee</th>
-                                <th className="text-right px-4 py-2">Salary</th>
-                                <th className="text-right px-4 py-2">Days</th>
-                                <th className="text-right px-4 py-2">Hours</th>
-                                <th className="text-right px-4 py-2">Earned</th>
-                                <th className="text-right px-4 py-2">Advances</th>
-                                <th className="text-right px-4 py-2">Net</th>
-                                <th className="text-center px-4 py-2">Status</th>
-                                <th className="text-right px-4 py-2 w-36">Action</th>
+                                <th className="text-left px-2 sm:px-4 py-2">Employee</th>
+                                <th className="text-right px-2 sm:px-4 py-2 hidden sm:table-cell">Salary</th>
+                                <th className="text-right px-2 sm:px-4 py-2 hidden md:table-cell">Days</th>
+                                <th className="text-right px-2 sm:px-4 py-2 hidden md:table-cell">Hours</th>
+                                <th className="text-right px-2 sm:px-4 py-2">Earned</th>
+                                <th className="text-right px-2 sm:px-4 py-2 hidden sm:table-cell">Advances</th>
+                                <th className="text-right px-2 sm:px-4 py-2">Net</th>
+                                <th className="text-center px-2 sm:px-4 py-2">Status</th>
+                                <th className="text-right px-2 sm:px-4 py-2">Action</th>
                               </tr>
                             </thead>
                             <tbody className="divide-y">
@@ -460,25 +477,25 @@ export default function EmployeesClient({ employees, monthSummaries, salaryMonth
                                 const net = (s?.total_earned ?? 0) - (s?.total_advance ?? 0);
                                 return (
                                   <tr key={e.id} className="hover:bg-muted/20 cursor-pointer" onClick={() => openDetail(e, ym)}>
-                                    <td className="px-4 py-2.5 font-medium">{e.name}</td>
-                                    <td className="px-4 py-2.5 text-right text-muted-foreground">PKR {formatPKR(salary)}</td>
-                                    <td className="px-4 py-2.5 text-right text-muted-foreground">{s?.days ?? 0}</td>
-                                    <td className="px-4 py-2.5 text-right text-muted-foreground">{(s?.total_hours ?? 0).toFixed(1)}</td>
-                                    <td className="px-4 py-2.5 text-right font-semibold">PKR {formatPKR(s?.total_earned ?? 0)}</td>
-                                    <td className="px-4 py-2.5 text-right text-amber-600">{(s?.total_advance ?? 0) > 0 ? `PKR ${formatPKR(s?.total_advance ?? 0)}` : "—"}</td>
-                                    <td className={`px-4 py-2.5 text-right font-semibold ${net >= 0 ? "text-emerald-600" : "text-red-600"}`}>
+                                    <td className="px-2 sm:px-4 py-2.5 font-medium">{e.name}</td>
+                                    <td className="px-2 sm:px-4 py-2.5 text-right text-muted-foreground hidden sm:table-cell whitespace-nowrap">PKR {formatPKR(salary)}</td>
+                                    <td className="px-2 sm:px-4 py-2.5 text-right text-muted-foreground hidden md:table-cell">{s?.days ?? 0}</td>
+                                    <td className="px-2 sm:px-4 py-2.5 text-right text-muted-foreground hidden md:table-cell">{(s?.total_hours ?? 0).toFixed(1)}</td>
+                                    <td className="px-2 sm:px-4 py-2.5 text-right font-semibold whitespace-nowrap">PKR {formatPKR(s?.total_earned ?? 0)}</td>
+                                    <td className="px-2 sm:px-4 py-2.5 text-right text-amber-600 hidden sm:table-cell whitespace-nowrap">{(s?.total_advance ?? 0) > 0 ? `PKR ${formatPKR(s?.total_advance ?? 0)}` : "—"}</td>
+                                    <td className={`px-2 sm:px-4 py-2.5 text-right font-semibold whitespace-nowrap ${net >= 0 ? "text-emerald-600" : "text-red-600"}`}>
                                       PKR {formatPKR(Math.abs(net))}{net < 0 ? " ↑" : ""}
                                     </td>
-                                    <td className="px-4 py-2.5 text-center">
-                                      <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${status === "paid" ? "bg-emerald-100 text-emerald-700" : "bg-red-100 text-red-700"}`}>
+                                    <td className="px-2 sm:px-4 py-2.5 text-center">
+                                      <span className={`text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 rounded-full font-medium ${status === "paid" ? "bg-emerald-100 text-emerald-700" : "bg-red-100 text-red-700"}`}>
                                         {status === "paid" ? "Paid" : "Unpaid"}
                                       </span>
                                     </td>
-                                    <td className="px-4 py-2.5 text-right" onClick={e2 => e2.stopPropagation()}>
+                                    <td className="px-2 sm:px-4 py-2.5 text-right" onClick={e2 => e2.stopPropagation()}>
                                       <Button size="sm" variant="outline"
-                                        className={`h-7 text-xs gap-1 ${status === "paid" ? "text-red-600 border-red-200 hover:bg-red-50" : "text-emerald-600 border-emerald-200 hover:bg-emerald-50"}`}
+                                        className={`h-7 text-[10px] sm:text-xs px-2 gap-1 ${status === "paid" ? "text-red-600 border-red-200 hover:bg-red-50" : "text-emerald-600 border-emerald-200 hover:bg-emerald-50"}`}
                                         onClick={() => handleTogglePaid(e.id, ym, status)}>
-                                        {status === "paid" ? <><XCircle className="h-3 w-3" /> Unpaid</> : <><CheckCircle className="h-3 w-3" /> Mark Paid</>}
+                                        {status === "paid" ? <><XCircle className="h-3 w-3" /><span className="hidden sm:inline"> Unpaid</span></> : <><CheckCircle className="h-3 w-3" /><span className="hidden sm:inline"> Mark Paid</span></>}
                                       </Button>
                                     </td>
                                   </tr>
@@ -499,7 +516,7 @@ export default function EmployeesClient({ employees, monthSummaries, salaryMonth
 
       {/* ── Employee detail dialog (full content, no nested scroll) ─────────── */}
       <Dialog open={!!detailEmp} onOpenChange={v => { if (!v) { setDetailEmp(null); setShowAddDay(false); } }}>
-        <DialogContent className="max-w-4xl w-full p-0">
+        <DialogContent className="w-full sm:max-w-4xl p-0 max-h-[90vh] overflow-y-auto">
           {detailEmp && (
             <div className="flex flex-col">
               {/* Header */}
@@ -549,16 +566,16 @@ export default function EmployeesClient({ employees, monthSummaries, salaryMonth
                     <table className="w-full text-xs">
                       <thead className="bg-muted/50 text-[10px] uppercase tracking-wide sticky top-0">
                         <tr>
-                          <th className="text-left px-3 py-2">Date</th>
-                          <th className="text-left px-3 py-2">Day</th>
-                          <th className="text-left px-3 py-2">In</th>
-                          <th className="text-left px-3 py-2">Out</th>
-                          <th className="text-right px-3 py-2">Break</th>
-                          <th className="text-right px-3 py-2">Hours</th>
-                          <th className="text-right px-3 py-2">Advance</th>
-                          <th className="text-right px-3 py-2">Net Salary</th>
-                          <th className="text-left px-3 py-2">Notes</th>
-                          <th className="w-8 px-2 py-2"></th>
+                          <th className="text-left px-2 sm:px-3 py-2">Date</th>
+                          <th className="text-left px-2 sm:px-3 py-2">Day</th>
+                          <th className="text-left px-2 sm:px-3 py-2 hidden sm:table-cell">In</th>
+                          <th className="text-left px-2 sm:px-3 py-2 hidden sm:table-cell">Out</th>
+                          <th className="text-right px-2 sm:px-3 py-2 hidden md:table-cell">Break</th>
+                          <th className="text-right px-2 sm:px-3 py-2">Hrs</th>
+                          <th className="text-right px-2 sm:px-3 py-2 hidden sm:table-cell">Advance</th>
+                          <th className="text-right px-2 sm:px-3 py-2">Net</th>
+                          <th className="text-left px-2 sm:px-3 py-2 hidden md:table-cell">Notes</th>
+                          <th className="w-7 px-1 sm:px-2 py-2"></th>
                         </tr>
                       </thead>
                       <tbody className="divide-y">
@@ -574,18 +591,18 @@ export default function EmployeesClient({ employees, monthSummaries, salaryMonth
                             return (
                               <React.Fragment key={d.id}>
                                 <tr className={`hover:bg-muted/20 ${isSunday ? "bg-amber-50/60" : ""}`}>
-                                  <td className="px-3 py-1.5 font-medium whitespace-nowrap">{formatDate(d.date)}</td>
-                                  <td className={`px-3 py-1.5 font-medium whitespace-nowrap ${isSunday ? "text-amber-600" : "text-muted-foreground"}`}>{dow}</td>
-                                  <td className="px-3 py-1.5 text-muted-foreground whitespace-nowrap">{d.in_time ?? "—"}</td>
-                                  <td className="px-3 py-1.5 text-muted-foreground whitespace-nowrap">{d.out_time ?? "—"}</td>
-                                  <td className="px-3 py-1.5 text-right text-muted-foreground">{d.break_time ? `${d.break_time}h` : "—"}</td>
-                                  <td className="px-3 py-1.5 text-right">{(d.hours ?? 0).toFixed(2)}</td>
-                                  <td className="px-3 py-1.5 text-right text-amber-600">{(d.advance ?? 0) > 0 ? formatPKR(d.advance ?? 0) : "—"}</td>
-                                  <td className={`px-3 py-1.5 text-right font-semibold ${actualSalary >= 0 ? "text-emerald-600" : "text-red-600"}`}>
+                                  <td className="px-2 sm:px-3 py-1.5 font-medium whitespace-nowrap text-xs">{formatDate(d.date)}</td>
+                                  <td className={`px-2 sm:px-3 py-1.5 font-medium whitespace-nowrap text-xs ${isSunday ? "text-amber-600" : "text-muted-foreground"}`}>{dow}</td>
+                                  <td className="px-2 sm:px-3 py-1.5 text-muted-foreground whitespace-nowrap text-xs hidden sm:table-cell">{d.in_time ?? "—"}</td>
+                                  <td className="px-2 sm:px-3 py-1.5 text-muted-foreground whitespace-nowrap text-xs hidden sm:table-cell">{d.out_time ?? "—"}</td>
+                                  <td className="px-2 sm:px-3 py-1.5 text-right text-muted-foreground text-xs hidden md:table-cell">{d.break_time ? `${d.break_time}h` : "—"}</td>
+                                  <td className="px-2 sm:px-3 py-1.5 text-right text-xs">{(d.hours ?? 0).toFixed(2)}</td>
+                                  <td className="px-2 sm:px-3 py-1.5 text-right text-amber-600 text-xs hidden sm:table-cell">{(d.advance ?? 0) > 0 ? formatPKR(d.advance ?? 0) : "—"}</td>
+                                  <td className={`px-2 sm:px-3 py-1.5 text-right font-semibold text-xs ${actualSalary >= 0 ? "text-emerald-600" : "text-red-600"}`}>
                                     {formatPKR(actualSalary)}
                                   </td>
-                                  <td className="px-3 py-1.5 text-muted-foreground max-w-[110px] truncate">{isSundayWorkedBonus ? "" : (d.notes ?? "")}</td>
-                                  <td className="px-2 py-1.5">
+                                  <td className="px-2 sm:px-3 py-1.5 text-muted-foreground max-w-[90px] truncate text-xs hidden md:table-cell">{isSundayWorkedBonus ? "" : (d.notes ?? "")}</td>
+                                  <td className="px-1 sm:px-2 py-1.5">
                                     <Button variant="ghost" size="icon" className="h-6 w-6 text-red-500 hover:text-red-700" onClick={() => handleDeleteDay(d.id)}>
                                       <Trash2 className="h-3 w-3" />
                                     </Button>
@@ -593,16 +610,16 @@ export default function EmployeesClient({ employees, monthSummaries, salaryMonth
                                 </tr>
                                 {isSundayWorkedBonus && (
                                   <tr className="bg-amber-50/60">
-                                    <td className="px-3 py-1.5 font-medium whitespace-nowrap text-muted-foreground">{formatDate(d.date)}</td>
-                                    <td className="px-3 py-1.5 font-medium whitespace-nowrap text-amber-600">{dow}</td>
-                                    <td className="px-3 py-1.5 text-muted-foreground">—</td>
-                                    <td className="px-3 py-1.5 text-muted-foreground">—</td>
-                                    <td className="px-3 py-1.5 text-right text-muted-foreground">—</td>
-                                    <td className="px-3 py-1.5 text-right">10.00</td>
-                                    <td className="px-3 py-1.5 text-right text-amber-600">—</td>
-                                    <td className="px-3 py-1.5 text-right font-semibold text-emerald-600">{formatPKR(sundayBonus)}</td>
-                                    <td className="px-3 py-1.5 text-amber-600 text-[10px] font-medium">Sunday Overtime</td>
-                                    <td className="px-2 py-1.5"></td>
+                                    <td className="px-2 sm:px-3 py-1.5 font-medium whitespace-nowrap text-muted-foreground text-xs">{formatDate(d.date)}</td>
+                                    <td className="px-2 sm:px-3 py-1.5 font-medium whitespace-nowrap text-amber-600 text-xs">{dow}</td>
+                                    <td className="px-2 sm:px-3 py-1.5 text-muted-foreground text-xs hidden sm:table-cell">—</td>
+                                    <td className="px-2 sm:px-3 py-1.5 text-muted-foreground text-xs hidden sm:table-cell">—</td>
+                                    <td className="px-2 sm:px-3 py-1.5 text-right text-muted-foreground text-xs hidden md:table-cell">—</td>
+                                    <td className="px-2 sm:px-3 py-1.5 text-right text-xs">10.00</td>
+                                    <td className="px-2 sm:px-3 py-1.5 text-right text-amber-600 text-xs hidden sm:table-cell">—</td>
+                                    <td className="px-2 sm:px-3 py-1.5 text-right font-semibold text-emerald-600 text-xs">{formatPKR(sundayBonus)}</td>
+                                    <td className="px-2 sm:px-3 py-1.5 text-amber-600 text-[10px] font-medium hidden md:table-cell">Sunday OT</td>
+                                    <td className="px-1 sm:px-2 py-1.5"></td>
                                   </tr>
                                 )}
                               </React.Fragment>
@@ -654,7 +671,7 @@ function AddDayForm({ employeeId, yearMonth, hourlyRate, onSaved, onCancel }: {
   return (
     <div className="border rounded-lg p-3 space-y-3 bg-muted/20">
       <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">New Entry</p>
-      <div className="grid grid-cols-3 gap-2">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
         <div><Label className="text-xs">Date</Label><Input type="date" className="h-8 text-xs" value={date} onChange={e => setDate(e.target.value)} /></div>
         <div><Label className="text-xs">In Time</Label><Input className="h-8 text-xs" value={inTime} onChange={e => setIn(e.target.value)} /></div>
         <div><Label className="text-xs">Out Time</Label><Input className="h-8 text-xs" value={outTime} onChange={e => setOut(e.target.value)} /></div>
@@ -686,7 +703,7 @@ function AddEmployeeDialog({ open, onClose }: { open: boolean; onClose: () => vo
   }
   return (
     <Dialog open={open} onOpenChange={v => !v && onClose()}>
-      <DialogContent className="max-w-sm">
+      <DialogContent className="w-full sm:max-w-sm">
         <DialogHeader><DialogTitle>Add Employee</DialogTitle></DialogHeader>
         <div className="space-y-3">
           <div><Label>Name *</Label><Input value={name} onChange={e => setName(e.target.value)} /></div>
@@ -716,7 +733,7 @@ function EditEmployeeDialog({ emp, onClose }: { emp: Employee; onClose: () => vo
   }
   return (
     <Dialog open onOpenChange={v => !v && onClose()}>
-      <DialogContent className="max-w-sm">
+      <DialogContent className="w-full sm:max-w-sm">
         <DialogHeader><DialogTitle>Edit: {emp.name}</DialogTitle></DialogHeader>
         <div className="space-y-3">
           <div><Label>Name</Label><Input value={name} onChange={e => setName(e.target.value)} /></div>

@@ -17,11 +17,11 @@ export default async function DashboardPage() {
   const d = await getDashboardData();
 
   return (
-    <div className="p-8 space-y-6">
+    <div className="p-4 sm:p-6 lg:p-8 space-y-4 sm:space-y-6">
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold">Dashboard</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold">Dashboard</h1>
           <p className="text-sm text-muted-foreground mt-1">
             Supreme Packages — Business Finance Overview
           </p>

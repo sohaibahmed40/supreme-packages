@@ -116,33 +116,34 @@ export default function UnknownTable({
           </div>
         </div>
         <CardContent className="p-0">
+          <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead className="bg-muted/50 text-xs uppercase tracking-wide">
               <tr>
-                <th className="text-left px-4 py-3">ID</th>
-                <th className="text-left px-4 py-3">Name</th>
-                <th className="text-left px-4 py-3">Description</th>
-                <th className="text-right px-4 py-3">
+                <th className="text-left px-3 sm:px-4 py-3">ID</th>
+                <th className="text-left px-3 sm:px-4 py-3 hidden sm:table-cell">Name</th>
+                <th className="text-left px-3 sm:px-4 py-3 hidden lg:table-cell">Description</th>
+                <th className="text-right px-3 sm:px-4 py-3">
                   <button onClick={() => handleSort("credit")} className="inline-flex items-center gap-1 hover:text-foreground transition-colors ml-auto">
                     Credit {sortIcon("credit")}
                   </button>
                 </th>
-                <th className="text-right px-4 py-3">
+                <th className="text-right px-3 sm:px-4 py-3 hidden sm:table-cell">
                   <button onClick={() => handleSort("debit")} className="inline-flex items-center gap-1 hover:text-foreground transition-colors ml-auto">
                     Debit {sortIcon("debit")}
                   </button>
                 </th>
-                <th className="text-right px-4 py-3">
+                <th className="text-right px-3 sm:px-4 py-3 hidden md:table-cell">
                   <button onClick={() => handleSort("txns")} className="inline-flex items-center gap-1 hover:text-foreground transition-colors ml-auto">
                     Txns {sortIcon("txns")}
                   </button>
                 </th>
-                <th className="text-right px-4 py-3">
+                <th className="text-right px-3 sm:px-4 py-3 hidden md:table-cell">
                   <button onClick={() => handleSort("date")} className="inline-flex items-center gap-1 hover:text-foreground transition-colors ml-auto">
                     Last TXN {sortIcon("date")}
                   </button>
                 </th>
-                <th className="text-right px-4 py-3 w-32">Action</th>
+                <th className="text-right px-3 sm:px-4 py-3">Action</th>
               </tr>
             </thead>
             <tbody className="divide-y">
@@ -151,31 +152,32 @@ export default function UnknownTable({
                   key={u.id}
                   className="hover:bg-muted/30 cursor-pointer"
                   onClick={e => {
-                    // Don't open drawer when clicking the Assign button
                     if ((e.target as HTMLElement).closest("button, [role=dialog]")) return;
                     openRow(u);
                   }}
                 >
-                  <td className="px-4 py-3">
-                    <span className="font-mono px-2 py-0.5 rounded bg-amber-100 text-amber-800 text-xs">
+                  <td className="px-3 sm:px-4 py-3">
+                    <span className="font-mono px-1.5 sm:px-2 py-0.5 rounded bg-amber-100 text-amber-800 text-xs">
                       {u.kind === "acct" ? "🏦" : "⚡"} {u.value}
                     </span>
+                    {/* Mobile: show name below ID */}
+                    <div className="sm:hidden text-xs font-semibold mt-0.5">{u.sample_name || ""}</div>
                   </td>
-                  <td className="px-4 py-3 font-semibold">{u.sample_name || "—"}</td>
-                  <td className="px-4 py-3 max-w-xs text-xs text-muted-foreground">
+                  <td className="px-3 sm:px-4 py-3 font-semibold hidden sm:table-cell">{u.sample_name || "—"}</td>
+                  <td className="px-3 sm:px-4 py-3 max-w-[150px] text-xs text-muted-foreground hidden lg:table-cell">
                     <TruncatedCell text={u.sample_description} />
                   </td>
-                  <td className="px-4 py-3 text-right text-emerald-600">
+                  <td className="px-3 sm:px-4 py-3 text-right text-emerald-600 text-xs sm:text-sm">
                     {(u.total_credit ?? 0) > 0 ? formatPKR(u.total_credit ?? 0) : "—"}
                   </td>
-                  <td className="px-4 py-3 text-right text-red-600">
+                  <td className="px-3 sm:px-4 py-3 text-right text-red-600 text-xs sm:text-sm hidden sm:table-cell">
                     {(u.total_debit ?? 0) > 0 ? formatPKR(u.total_debit ?? 0) : "—"}
                   </td>
-                  <td className="px-4 py-3 text-right">{u.txn_count}</td>
-                  <td className="px-4 py-3 text-right text-xs text-muted-foreground whitespace-nowrap">
+                  <td className="px-3 sm:px-4 py-3 text-right text-xs hidden md:table-cell">{u.txn_count}</td>
+                  <td className="px-3 sm:px-4 py-3 text-right text-xs text-muted-foreground whitespace-nowrap hidden md:table-cell">
                     {u.last_txn_date ? formatDate(u.last_txn_date) : "—"}
                   </td>
-                  <td className="px-4 py-3 text-right" onClick={e => e.stopPropagation()}>
+                  <td className="px-3 sm:px-4 py-3 text-right" onClick={e => e.stopPropagation()}>
                     <AssignDialog unknown={u} entities={entities} />
                   </td>
                 </tr>
@@ -189,12 +191,13 @@ export default function UnknownTable({
               )}
             </tbody>
           </table>
+          </div>
         </CardContent>
       </Card>
 
       {/* Transactions drawer */}
       <Sheet open={!!selected} onOpenChange={open => { if (!open) setSelected(null); }}>
-        <SheetContent>
+        <SheetContent className="w-full sm:max-w-lg">
           {selected && (
             <>
               <SheetHeader>

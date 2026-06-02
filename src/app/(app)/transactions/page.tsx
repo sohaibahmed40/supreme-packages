@@ -83,31 +83,31 @@ export default async function TransactionsPage({ searchParams }: Props) {
   });
 
   return (
-    <div className="p-8 space-y-6">
+    <div className="p-4 sm:p-6 lg:p-8 space-y-4 sm:space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">Transactions</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold">Transactions</h1>
         <p className="text-sm text-muted-foreground mt-1">
           {t.count.toLocaleString()} transactions matching filters
         </p>
       </div>
 
       {/* Totals */}
-      <div className="grid grid-cols-3 gap-4">
-        <Card className="p-4">
+      <div className="grid grid-cols-3 gap-3">
+        <Card className="p-3 sm:p-4">
           <div className="text-xs text-muted-foreground uppercase">Income</div>
-          <div className="text-2xl font-bold text-emerald-600 mt-1">
+          <div className="text-lg sm:text-2xl font-bold text-emerald-600 mt-1">
             PKR {formatPKR(t.totalIncome)}
           </div>
         </Card>
-        <Card className="p-4">
+        <Card className="p-3 sm:p-4">
           <div className="text-xs text-muted-foreground uppercase">Expenses</div>
-          <div className="text-2xl font-bold text-red-600 mt-1">
+          <div className="text-lg sm:text-2xl font-bold text-red-600 mt-1">
             PKR {formatPKR(t.totalExpense)}
           </div>
         </Card>
-        <Card className="p-4">
+        <Card className="p-3 sm:p-4">
           <div className="text-xs text-muted-foreground uppercase">Net</div>
-          <div className={`text-2xl font-bold mt-1 ${(t.totalIncome - t.totalExpense) >= 0 ? "text-emerald-600" : "text-red-600"}`}>
+          <div className={`text-lg sm:text-2xl font-bold mt-1 ${(t.totalIncome - t.totalExpense) >= 0 ? "text-emerald-600" : "text-red-600"}`}>
             PKR {formatPKR(t.totalIncome - t.totalExpense)}
           </div>
         </Card>
@@ -123,8 +123,8 @@ export default async function TransactionsPage({ searchParams }: Props) {
       <Card>
         <CardContent className="p-0">
           {txns.length === 0 ? (
-            <div className="p-12 text-center text-muted-foreground">
-              <Receipt className="h-12 w-12 mx-auto mb-3 opacity-30" />
+            <div className="p-8 sm:p-12 text-center text-muted-foreground">
+              <Receipt className="h-10 w-10 sm:h-12 sm:w-12 mx-auto mb-3 opacity-30" />
               No transactions matching filters
             </div>
           ) : (
@@ -132,13 +132,13 @@ export default async function TransactionsPage({ searchParams }: Props) {
               <table className="w-full text-sm">
                 <thead className="bg-muted/50 text-xs uppercase tracking-wide sticky top-0">
                   <tr>
-                    <th className="text-left px-3 py-3 font-medium">Date</th>
-                    <th className="text-left px-3 py-3 font-medium">Description</th>
-                    <th className="text-left px-3 py-3 font-medium">Entity</th>
-                    <th className="text-left px-3 py-3 font-medium">Category</th>
+                    <th className="text-left px-3 py-3 font-medium whitespace-nowrap">Date</th>
+                    <th className="text-left px-3 py-3 font-medium hidden sm:table-cell">Description</th>
+                    <th className="text-left px-3 py-3 font-medium hidden md:table-cell">Entity</th>
+                    <th className="text-left px-3 py-3 font-medium hidden sm:table-cell">Category</th>
                     <th className="text-right px-3 py-3 font-medium">Amount</th>
-                    <th className="text-right px-3 py-3 font-medium">Acct</th>
-                    <th className="text-right px-3 py-3 font-medium w-12">⋮</th>
+                    <th className="text-right px-3 py-3 font-medium hidden md:table-cell">Acct</th>
+                    <th className="text-right px-3 py-3 font-medium w-10">⋮</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y">
@@ -147,23 +147,31 @@ export default async function TransactionsPage({ searchParams }: Props) {
                     const isCredit = (t.credit || 0) > 0;
                     return (
                       <tr key={t.id} className="hover:bg-muted/30">
-                        <td className="px-3 py-2 whitespace-nowrap">{formatDate(t.date)}</td>
-                        <td className="px-3 py-2 max-w-md"><TruncatedCell text={t.description} /></td>
-                        <td className="px-3 py-2 font-medium">
+                        <td className="px-3 py-2.5 whitespace-nowrap text-xs sm:text-sm">
+                          <div>{formatDate(t.date)}</div>
+                          {/* Show entity on mobile below date */}
+                          <div className="sm:hidden text-muted-foreground truncate max-w-[120px]">
+                            {t.entity_name ?? <span className="text-amber-600 text-xs">Unidentified</span>}
+                          </div>
+                        </td>
+                        <td className="px-3 py-2.5 max-w-[200px] hidden sm:table-cell">
+                          <TruncatedCell text={t.description} />
+                        </td>
+                        <td className="px-3 py-2.5 font-medium hidden md:table-cell">
                           {t.entity_name ?? <span className="text-amber-600">— Unidentified —</span>}
                         </td>
-                        <td className="px-3 py-2 text-xs">
+                        <td className="px-3 py-2.5 text-xs hidden sm:table-cell">
                           <span className="px-2 py-0.5 rounded-full bg-secondary text-secondary-foreground">
                             {t.category}
                           </span>
                         </td>
-                        <td className={`px-3 py-2 text-right font-semibold whitespace-nowrap ${isCredit ? "text-emerald-600" : "text-red-600"}`}>
+                        <td className={`px-3 py-2.5 text-right font-semibold whitespace-nowrap text-xs sm:text-sm ${isCredit ? "text-emerald-600" : "text-red-600"}`}>
                           {isCredit ? "+" : "−"} {formatPKR(Math.abs(amount), 2)}
                         </td>
-                        <td className="px-3 py-2 text-right text-xs text-muted-foreground">
+                        <td className="px-3 py-2.5 text-right text-xs text-muted-foreground hidden md:table-cell">
                           {t.account_digits ?? "—"}
                         </td>
-                        <td className="px-3 py-2 text-right">
+                        <td className="px-3 py-2.5 text-right">
                           <TransactionRowActions
                             txnId={t.id}
                             currentEntityId={t.entity_id}
@@ -197,18 +205,18 @@ function Pagination({ page, total, pageSize, searchParams }: {
     if (v && k !== "page") params.set(k, v);
   }
   return (
-    <div className="flex items-center justify-between">
+    <div className="flex items-center justify-between gap-3">
       <p className="text-sm text-muted-foreground">
         Page {page} of {totalPages}
       </p>
       <div className="flex gap-2">
         {page > 1 && (
           <a href={`?${new URLSearchParams({ ...Object.fromEntries(params), page: String(page - 1) })}`}
-             className="px-3 py-1.5 text-sm border rounded hover:bg-secondary">Previous</a>
+             className="px-4 py-2 text-sm border rounded hover:bg-secondary">Previous</a>
         )}
         {page < totalPages && (
           <a href={`?${new URLSearchParams({ ...Object.fromEntries(params), page: String(page + 1) })}`}
-             className="px-3 py-1.5 text-sm border rounded hover:bg-secondary">Next</a>
+             className="px-4 py-2 text-sm border rounded hover:bg-secondary">Next</a>
         )}
       </div>
     </div>

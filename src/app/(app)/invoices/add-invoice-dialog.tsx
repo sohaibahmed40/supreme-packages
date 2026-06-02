@@ -59,7 +59,7 @@ export default function AddInvoiceDialog({ clients }: { clients: Client[] }) {
       </Button>
 
       <Dialog open={open} onOpenChange={v => { if (!v) { setOpen(false); reset(); } }}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="w-full sm:max-w-md">
           <DialogHeader>
             <DialogTitle>New Invoice</DialogTitle>
           </DialogHeader>
@@ -77,7 +77,7 @@ export default function AddInvoiceDialog({ clients }: { clients: Client[] }) {
               </Select>
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <Label>Invoice # (optional)</Label>
                 <Input value={invNum} onChange={e => setInvNum(e.target.value)} placeholder="INV-001" />
@@ -93,7 +93,7 @@ export default function AddInvoiceDialog({ clients }: { clients: Client[] }) {
               <Input value={description} onChange={e => setDescription(e.target.value)} placeholder="e.g. Box packaging — April batch" />
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <Label>Amount (PKR) *</Label>
                 <Input type="number" value={amount} onChange={e => setAmount(e.target.value)} placeholder="0" />

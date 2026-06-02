@@ -43,7 +43,7 @@ export default function CashForm() {
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-2 md:grid-cols-6 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3">
           <div>
             <Label>Date</Label>
             <Input type="date" value={date} onChange={e => setDate(e.target.value)} />

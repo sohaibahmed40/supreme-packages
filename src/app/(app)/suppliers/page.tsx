@@ -40,9 +40,9 @@ export default async function SuppliersPage() {
   }));
 
   return (
-    <div className="p-8 space-y-6">
+    <div className="p-4 sm:p-6 lg:p-8 space-y-4 sm:space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">Suppliers & Vendors</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold">Suppliers & Vendors</h1>
         <p className="text-sm text-muted-foreground mt-1">
           Raw materials, transport, rent, services
         </p>
@@ -50,17 +50,17 @@ export default async function SuppliersPage() {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <Card className="p-4">
           <div className="text-xs text-muted-foreground uppercase">Total Suppliers</div>
-          <div className="text-3xl font-bold mt-1">{suppliers.length}</div>
+          <div className="text-xl sm:text-2xl font-bold mt-1">{suppliers.length}</div>
         </Card>
         <Card className="p-4">
           <div className="text-xs text-muted-foreground uppercase">Total Paid</div>
-          <div className="text-3xl font-bold text-red-600 mt-1">
+          <div className="text-xl sm:text-2xl font-bold text-red-600 mt-1">
             PKR {formatPKR(enriched.reduce((a, s) => a + s.totalPaid, 0))}
           </div>
         </Card>
         <Card className="p-4">
           <div className="text-xs text-muted-foreground uppercase">Active</div>
-          <div className="text-3xl font-bold mt-1">
+          <div className="text-xl sm:text-2xl font-bold mt-1">
             {enriched.filter(s => s.totalPaid > 0).length}
           </div>
         </Card>
