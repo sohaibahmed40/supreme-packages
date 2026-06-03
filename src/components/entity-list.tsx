@@ -139,8 +139,8 @@ export default function EntityList({
                     <td className="px-3 sm:px-4 py-3 text-right text-muted-foreground hidden sm:table-cell">{e.txnCount}</td>
                     {showPending && (
                       <td className="px-3 sm:px-4 py-3 text-right hidden md:table-cell">
-                        {(e.pending_amount ?? 0) > 0 ? (
-                          <span className="font-bold text-red-600 text-xs sm:text-sm">PKR {formatPKR(e.pending_amount ?? 0)}</span>
+                        {(e.outstanding ?? 0) > 0 ? (
+                          <span className="font-bold text-red-600 text-xs sm:text-sm">PKR {formatPKR(e.outstanding ?? 0)}</span>
                         ) : (
                           <span className="text-emerald-600 text-xs">✅ Settled</span>
                         )}
