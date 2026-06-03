@@ -8,7 +8,16 @@ import { Label } from "@/components/ui/label";
 import { formatPKR, formatDate } from "@/lib/utils";
 import { createInvoice, recordPayment, markInvoicePaid, deleteInvoice, getClientInvoices } from "@/lib/invoice-actions";
 import { toast } from "sonner";
-import { Plus, CheckCircle, Trash2, CreditCard, Loader2 } from "lucide-react";
+import { Plus, CheckCircle, Trash2, CreditCard, Loader2, X } from "lucide-react";
+
+interface InvoiceItem {
+  id: number;
+  invoice_id: number;
+  description: string;
+  quantity: number;
+  unit_price: number;
+  total: number;
+}
 
 interface Invoice {
   id: number;
@@ -19,6 +28,7 @@ interface Invoice {
   paid_amount: number | null;
   status: string | null;
   notes: string | null;
+  items?: InvoiceItem[];
 }
 
 interface Props {
@@ -28,6 +38,8 @@ interface Props {
   clientName: string;
   initialInvoices: Invoice[];
 }
+
+type ItemRow = { description: string; qty: string; price: string };
 
 const STATUS_STYLES: Record<string, string> = {
   paid:    "bg-emerald-100 text-emerald-700",
@@ -46,12 +58,32 @@ export default function InvoiceSheet({ open, onClose, clientId, clientName, init
   const [invNum, setInvNum] = useState("");
   const [invDate, setInvDate] = useState(new Date().toISOString().slice(0, 10));
   const [invDesc, setInvDesc] = useState("");
-  const [invAmount, setInvAmount] = useState("");
   const [invNotes, setInvNotes] = useState("");
+  const [items, setItems] = useState<ItemRow[]>([{ description: "", qty: "1", price: "" }]);
+
+  const itemsTotal = items.reduce((sum, item) => {
+    return sum + (parseFloat(item.qty) || 0) * (parseFloat(item.price) || 0);
+  }, 0);
 
   const totalInvoiced    = invoices.reduce((s, i) => s + i.invoiced_amount, 0);
   const totalPaid        = invoices.reduce((s, i) => s + (i.paid_amount ?? 0), 0);
   const totalOutstanding = totalInvoiced - totalPaid;
+
+  function addItem() {
+    setItems(prev => [...prev, { description: "", qty: "1", price: "" }]);
+  }
+  function removeItem(idx: number) {
+    setItems(prev => prev.length === 1 ? prev : prev.filter((_, i) => i !== idx));
+  }
+  function updateItem(idx: number, field: keyof ItemRow, value: string) {
+    setItems(prev => prev.map((item, i) => i === idx ? { ...item, [field]: value } : item));
+  }
+
+  function resetForm() {
+    setInvNum(""); setInvDesc(""); setInvNotes("");
+    setInvDate(new Date().toISOString().slice(0, 10));
+    setItems([{ description: "", qty: "1", price: "" }]);
+  }
 
   async function refresh() {
     const fresh = await getClientInvoices(clientId);
@@ -60,19 +92,24 @@ export default function InvoiceSheet({ open, onClose, clientId, clientName, init
   }
 
   async function handleCreate() {
-    if (!invAmount || isNaN(parseFloat(invAmount))) { toast.error("Enter a valid amount"); return; }
+    const validItems = items.filter(item => item.description.trim() && parseFloat(item.price) > 0);
+    if (validItems.length === 0) { toast.error("Add at least one item with a description and price"); return; }
     setLoading(true);
     try {
       await createInvoice({
         clientId, date: invDate,
         invoiceNumber: invNum || undefined,
         description: invDesc || undefined,
-        invoicedAmount: parseFloat(invAmount),
         notes: invNotes || undefined,
+        items: validItems.map(item => ({
+          description: item.description.trim(),
+          quantity: parseFloat(item.qty) || 1,
+          unit_price: parseFloat(item.price),
+        })),
       });
       toast.success("Invoice created");
       setShowAdd(false);
-      setInvNum(""); setInvDesc(""); setInvAmount(""); setInvNotes("");
+      resetForm();
       await refresh();
     } catch (e: any) { toast.error(e?.message || "Failed"); }
     finally { setLoading(false); }
@@ -113,7 +150,7 @@ export default function InvoiceSheet({ open, onClose, clientId, clientName, init
 
   return (
     <Sheet open={open} onOpenChange={v => { if (!v) onClose(); }}>
-      <SheetContent className="w-full sm:w-[600px] sm:max-w-full p-4 sm:p-6">
+      <SheetContent className="w-full sm:w-[620px] sm:max-w-full p-4 sm:p-6 overflow-y-auto">
         <SheetHeader className="mb-4">
           <SheetTitle className="text-base sm:text-lg">{clientName} — Invoices</SheetTitle>
           <SheetDescription className="flex flex-wrap gap-2 sm:gap-4 text-xs sm:text-sm">
@@ -123,7 +160,7 @@ export default function InvoiceSheet({ open, onClose, clientId, clientName, init
           </SheetDescription>
         </SheetHeader>
 
-        <div className="flex-1 overflow-y-auto flex flex-col gap-3">
+        <div className="flex flex-col gap-3">
 
           {!showAdd ? (
             <Button variant="gold" size="sm" className="self-start" onClick={() => setShowAdd(true)}>
@@ -132,6 +169,8 @@ export default function InvoiceSheet({ open, onClose, clientId, clientName, init
           ) : (
             <div className="border rounded-lg p-3 space-y-3 bg-muted/30">
               <p className="font-semibold text-sm">New Invoice</p>
+
+              {/* Header fields */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <Label>Invoice # (optional)</Label>
@@ -143,24 +182,80 @@ export default function InvoiceSheet({ open, onClose, clientId, clientName, init
                 </div>
               </div>
               <div>
-                <Label>Description</Label>
+                <Label>Description (optional)</Label>
                 <Input value={invDesc} onChange={e => setInvDesc(e.target.value)} placeholder="e.g. Box packaging — April batch" />
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <Label>Amount (PKR) *</Label>
-                  <Input type="number" value={invAmount} onChange={e => setInvAmount(e.target.value)} placeholder="0" />
+
+              {/* Line items */}
+              <div className="space-y-2">
+                <div className="grid grid-cols-[1fr_56px_90px_64px_28px] gap-1 text-xs text-muted-foreground px-1">
+                  <span>Description *</span>
+                  <span>Qty</span>
+                  <span>Unit Price</span>
+                  <span className="text-right">Total</span>
+                  <span />
                 </div>
-                <div>
-                  <Label>Notes</Label>
-                  <Input value={invNotes} onChange={e => setInvNotes(e.target.value)} placeholder="Optional" />
+                {items.map((item, idx) => {
+                  const rowTotal = (parseFloat(item.qty) || 0) * (parseFloat(item.price) || 0);
+                  return (
+                    <div key={idx} className="grid grid-cols-[1fr_56px_90px_64px_28px] gap-1 items-center">
+                      <Input
+                        value={item.description}
+                        onChange={e => updateItem(idx, "description", e.target.value)}
+                        placeholder="Item name"
+                        className="h-8 text-xs"
+                      />
+                      <Input
+                        type="number"
+                        value={item.qty}
+                        onChange={e => updateItem(idx, "qty", e.target.value)}
+                        placeholder="1"
+                        className="h-8 text-xs"
+                        min="0"
+                      />
+                      <Input
+                        type="number"
+                        value={item.price}
+                        onChange={e => updateItem(idx, "price", e.target.value)}
+                        placeholder="0"
+                        className="h-8 text-xs"
+                        min="0"
+                      />
+                      <div className="text-xs text-right font-medium tabular-nums">
+                        {rowTotal > 0 ? formatPKR(rowTotal) : "—"}
+                      </div>
+                      <Button
+                        variant="ghost" size="sm"
+                        className="h-7 w-7 p-0 text-muted-foreground hover:text-red-500"
+                        onClick={() => removeItem(idx)}
+                        disabled={items.length === 1}
+                      >
+                        <X className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
+                  );
+                })}
+
+                <div className="flex items-center justify-between pt-1">
+                  <Button variant="outline" size="sm" className="h-7 text-xs gap-1" onClick={addItem}>
+                    <Plus className="h-3 w-3" /> Add Item
+                  </Button>
+                  <div className="text-sm font-semibold">
+                    Total: PKR {formatPKR(itemsTotal)}
+                  </div>
                 </div>
               </div>
+
+              <div>
+                <Label>Notes</Label>
+                <Input value={invNotes} onChange={e => setInvNotes(e.target.value)} placeholder="Optional" />
+              </div>
+
               <div className="flex gap-2">
                 <Button variant="gold" size="sm" onClick={handleCreate} disabled={loading}>
                   {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Create"}
                 </Button>
-                <Button variant="outline" size="sm" onClick={() => setShowAdd(false)}>Cancel</Button>
+                <Button variant="outline" size="sm" onClick={() => { setShowAdd(false); resetForm(); }}>Cancel</Button>
               </div>
             </div>
           )}
@@ -186,7 +281,26 @@ export default function InvoiceSheet({ open, onClose, clientId, clientName, init
                           </span>
                         </div>
                         {inv.description && <p className="text-sm mt-1">{inv.description}</p>}
-                        {inv.notes && <p className="text-xs text-muted-foreground">{inv.notes}</p>}
+
+                        {/* Line items */}
+                        {inv.items && inv.items.length > 0 && (
+                          <div className="mt-2 space-y-0.5">
+                            {inv.items.map(item => (
+                              <div key={item.id} className="flex items-center justify-between text-xs text-muted-foreground">
+                                <span>{item.description}{item.quantity !== 1 ? ` ×${item.quantity}` : ""}</span>
+                                <span className="tabular-nums ml-2 shrink-0">PKR {formatPKR(item.total)}</span>
+                              </div>
+                            ))}
+                            {inv.items.length > 1 && (
+                              <div className="flex justify-between text-xs font-medium border-t pt-0.5 mt-0.5">
+                                <span>Total</span>
+                                <span className="tabular-nums">PKR {formatPKR(inv.invoiced_amount)}</span>
+                              </div>
+                            )}
+                          </div>
+                        )}
+
+                        {inv.notes && <p className="text-xs text-muted-foreground mt-1">{inv.notes}</p>}
                       </div>
                       <div className="text-right shrink-0">
                         <div className="font-semibold text-sm">PKR {formatPKR(inv.invoiced_amount)}</div>

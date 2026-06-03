@@ -1,26 +1,55 @@
 "use server";
 import { db, schema } from "@/db";
-import { eq } from "drizzle-orm";
+import { eq, inArray } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
+
+export type InvoiceItemInput = {
+  description: string;
+  quantity: number;
+  unit_price: number;
+};
 
 export async function createInvoice(data: {
   clientId: number;
   invoiceNumber?: string;
   date: string;
   description?: string;
-  invoicedAmount: number;
+  invoicedAmount?: number;
   notes?: string;
+  items?: InvoiceItemInput[];
 }) {
-  await db.insert(schema.invoices).values({
-    client_id: data.clientId,
-    invoice_number: data.invoiceNumber || null,
-    date: data.date,
-    description: data.description || null,
-    invoiced_amount: data.invoicedAmount,
-    paid_amount: 0,
-    status: "pending",
-    notes: data.notes || null,
-  });
+  const items = data.items ?? [];
+  const invoicedAmount =
+    items.length > 0
+      ? items.reduce((sum, item) => sum + item.quantity * item.unit_price, 0)
+      : (data.invoicedAmount ?? 0);
+
+  const [inv] = await db
+    .insert(schema.invoices)
+    .values({
+      client_id: data.clientId,
+      invoice_number: data.invoiceNumber || null,
+      date: data.date,
+      description: data.description || null,
+      invoiced_amount: invoicedAmount,
+      paid_amount: 0,
+      status: "pending",
+      notes: data.notes || null,
+    })
+    .returning({ id: schema.invoices.id });
+
+  if (items.length > 0) {
+    await db.insert(schema.invoice_items).values(
+      items.map((item) => ({
+        invoice_id: inv.id,
+        description: item.description,
+        quantity: item.quantity,
+        unit_price: item.unit_price,
+        total: item.quantity * item.unit_price,
+      }))
+    );
+  }
+
   revalidatePath("/clients");
   revalidatePath("/invoices");
 }
@@ -58,7 +87,21 @@ export async function deleteInvoice(invoiceId: number) {
 }
 
 export async function getClientInvoices(clientId: number) {
-  return db.select().from(schema.invoices)
+  const invoices = await db
+    .select()
+    .from(schema.invoices)
     .where(eq(schema.invoices.client_id, clientId))
     .orderBy(schema.invoices.date);
+
+  if (invoices.length === 0) return [];
+
+  const items = await db
+    .select()
+    .from(schema.invoice_items)
+    .where(inArray(schema.invoice_items.invoice_id, invoices.map((i) => i.id)));
+
+  return invoices.map((inv) => ({
+    ...inv,
+    items: items.filter((item) => item.invoice_id === inv.id),
+  }));
 }

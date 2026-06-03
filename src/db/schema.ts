@@ -129,6 +129,18 @@ export const invoices = sqliteTable("invoices", {
   notes: text("notes"),
 });
 
+// ─────────── INVOICE ITEMS (line items per invoice) ───────────
+export const invoice_items = sqliteTable("invoice_items", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  invoice_id: integer("invoice_id").references(() => invoices.id, { onDelete: "cascade" }).notNull(),
+  description: text("description").notNull(),
+  quantity: real("quantity").notNull().default(1),
+  unit_price: real("unit_price").notNull(),
+  total: real("total").notNull(),
+}, (t) => ({
+  invoiceIdx: index("inv_item_invoice_idx").on(t.invoice_id),
+}));
+
 // ─────────── BILLS (payables — supplier bills you owe) ───────────
 export const bills = sqliteTable("bills", {
   id: integer("id").primaryKey({ autoIncrement: true }),
@@ -168,4 +180,5 @@ export type NewTransaction = typeof transactions.$inferInsert;
 export type Employee = typeof employees.$inferSelect;
 export type CashExpense = typeof cash_expenses.$inferSelect;
 export type Invoice = typeof invoices.$inferSelect;
+export type InvoiceItem = typeof invoice_items.$inferSelect;
 export type Bill = typeof bills.$inferSelect;
