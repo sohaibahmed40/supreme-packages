@@ -141,6 +141,20 @@ export const invoice_items = sqliteTable("invoice_items", {
   invoiceIdx: index("inv_item_invoice_idx").on(t.invoice_id),
 }));
 
+// ─────────── INVOICE PAYMENTS (payment history per invoice) ───────────
+export const invoice_payments = sqliteTable("invoice_payments", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  invoice_id: integer("invoice_id").references(() => invoices.id, { onDelete: "cascade" }).notNull(),
+  amount: real("amount").notNull(),
+  date: text("date").notNull(),
+  payment_type: text("payment_type", { enum: ["bank_transfer", "cash"] }).notNull(),
+  transaction_id: integer("transaction_id").references(() => transactions.id, { onDelete: "set null" }),
+  notes: text("notes"),
+  created_at: integer("created_at", { mode: "timestamp" }).default(sql`(unixepoch())`),
+}, (t) => ({
+  invoiceIdx: index("inv_pay_invoice_idx").on(t.invoice_id),
+}));
+
 // ─────────── BILLS (payables — supplier bills you owe) ───────────
 export const bills = sqliteTable("bills", {
   id: integer("id").primaryKey({ autoIncrement: true }),
@@ -181,4 +195,5 @@ export type Employee = typeof employees.$inferSelect;
 export type CashExpense = typeof cash_expenses.$inferSelect;
 export type Invoice = typeof invoices.$inferSelect;
 export type InvoiceItem = typeof invoice_items.$inferSelect;
+export type InvoicePayment = typeof invoice_payments.$inferSelect;
 export type Bill = typeof bills.$inferSelect;
